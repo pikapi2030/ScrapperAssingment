@@ -69,4 +69,21 @@ app.listen(PORT, () => {
     console.log(`🚀 Backend Server running on http://localhost:${PORT}`);
     console.log(`🎯 Mock Store Target: https://demo.inelabteamdev.com`);
     console.log(`====================================================`);
+
+    // Keep-alive heartbeat to prevent Render free-tier from sleeping after 15m
+    if (process.env.NODE_ENV === 'production') {
+        const PING_INTERVAL_MS = 10 * 60 * 1000; // Ping every 10 minutes
+        const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || 'https://scrapperassingment.onrender.com';
+        console.log(`[KeepAlive] Initialized 10-minute keep-alive heartbeat for ${BACKEND_URL}`);
+
+        setInterval(async () => {
+            try {
+                const axios = require('axios');
+                await axios.get(`${BACKEND_URL}/api/health`, { timeout: 15000 });
+                console.log(`[KeepAlive] Pinged ${BACKEND_URL}/api/health successfully at ${new Date().toISOString()}`);
+            } catch (err) {
+                console.warn('[KeepAlive] Self-ping notice:', err.message);
+            }
+        }, PING_INTERVAL_MS);
+    }
 });

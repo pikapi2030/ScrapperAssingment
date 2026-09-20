@@ -1,0 +1,22 @@
+name: Keep Render Backend Warm
+
+on:
+  schedule:
+    # Runs every 14 minutes to prevent Render 15-minute free-tier idle sleep
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Health Endpoint
+        run: |
+          echo "Pinging https://scrapperassingment.onrender.com/api/health..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 45 https://scrapperassingment.onrender.com/api/health)
+          echo "HTTP Status Code: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "Render backend is awake and healthy."
+          else
+            echo "Render responded with status $STATUS (or took longer than 45s to wake up)."
+          fi
