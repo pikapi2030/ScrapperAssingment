@@ -24,6 +24,7 @@ router.get('/', async (req, res) => {
 
         res.json({
             status: 'online',
+            version: '1.0.4',
             timestamp: new Date().toISOString(),
             database: db.isSupabase() ? 'Supabase (PostgreSQL)' : 'Local Persistent Store (JSON fallback)',
             stats: {

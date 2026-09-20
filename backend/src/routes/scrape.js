@@ -12,7 +12,22 @@ const alertService = require('../services/alertService');
 router.post('/:productId', async (req, res) => {
     try {
         const productId = Number(req.params.productId);
-        console.log(`[Route] Manual on-demand scrape requested for #${productId}`);
+        // Ensure product exists in DB before recording scrape logs
+        try {
+            const existing = await db.getProductById(productId);
+            if (!existing) {
+                const catalogFetcher = require('../scraper/catalogFetcher');
+                const details = await catalogFetcher.getProductDetails(productId);
+                if (details) {
+                    await db.upsertTrackedProduct({
+                        ...details,
+                        scrape_interval_hours: 2
+                    });
+                }
+            }
+        } catch (setupErr) {
+            console.warn('[Scrape] Pre-scrape product check warning:', setupErr.message);
+        }
 
         // Run scraper
         const scrapeResult = await browserScraper.scrapeProduct(productId, { headless: true });
