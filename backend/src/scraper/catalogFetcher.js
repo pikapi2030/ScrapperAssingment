@@ -83,24 +83,57 @@ const catalogFetcher = {
 
     /**
      * Search products by partial or full product name, brand, SKU, or category.
+     * Supports multi-word token matching so queries like "Helix Surge Station Max"
+     * accurately find "Helix Surge Station XL".
      */
     async search(query = '', category = '') {
         const products = await this.getAllProducts();
         const trimmed = query.trim().toLowerCase();
 
-        return products.filter(item => {
-            if (category && item.category && item.category.toLowerCase() !== category.toLowerCase()) {
-                return false;
+        let filtered = products;
+        if (category) {
+            filtered = filtered.filter(item => item.category && item.category.toLowerCase() === category.toLowerCase());
+        }
+
+        if (!trimmed) return filtered;
+
+        // Break query into tokens (e.g. ['helix', 'surge', 'station', 'max'])
+        const tokens = trimmed.split(/\s+/).filter(t => t.length > 0);
+
+        const scored = [];
+        for (const item of filtered) {
+            const nameLower = (item.name || '').toLowerCase();
+            const brandLower = (item.brand || '').toLowerCase();
+            const skuLower = (item.sku || '').toLowerCase();
+            const catLower = (item.category || '').toLowerCase();
+            const fullText = `${nameLower} ${brandLower} ${skuLower} ${catLower}`;
+
+            // Exact full substring match gets highest score
+            if (nameLower.includes(trimmed)) {
+                scored.push({ item, score: 100 });
+                continue;
             }
-            if (!trimmed) return true;
 
-            const nameMatch = item.name && item.name.toLowerCase().includes(trimmed);
-            const brandMatch = item.brand && item.brand.toLowerCase().includes(trimmed);
-            const skuMatch = item.sku && item.sku.toLowerCase().includes(trimmed);
-            const catMatch = item.category && item.category.toLowerCase().includes(trimmed);
+            // Count matching tokens
+            let matchedTokens = 0;
+            for (const token of tokens) {
+                if (fullText.includes(token)) {
+                    matchedTokens++;
+                }
+            }
 
-            return nameMatch || brandMatch || skuMatch || catMatch;
-        });
+            if (matchedTokens > 0) {
+                const score = (matchedTokens / tokens.length) * 80;
+                // Match if at least half of tokens matched or single-word query
+                if (matchedTokens >= Math.ceil(tokens.length * 0.5)) {
+                    scored.push({ item, score });
+                }
+            }
+        }
+
+        // Sort descending by score
+        scored.sort((a, b) => b.score - a.score);
+        return scored.map(s => s.item);
     },
 
     /**
