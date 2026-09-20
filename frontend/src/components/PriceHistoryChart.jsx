@@ -142,7 +142,7 @@ export default function PriceHistoryChart({ product, history = [] }) {
                 <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         {metric === 'price' ? (
-                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <AreaChart data={chartData} margin={{ top: 15, right: 20, left: 15, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
@@ -162,7 +162,12 @@ export default function PriceHistoryChart({ product, history = [] }) {
                                     fontSize={11}
                                     tickLine={false}
                                     axisLine={false}
-                                    tickFormatter={(val) => `₹${val}`}
+                                    width={65}
+                                    domain={[
+                                        (dataMin) => Math.max(0, Math.floor((dataMin - 1500) / 500) * 500),
+                                        (dataMax) => Math.ceil((dataMax + 1500) / 500) * 500
+                                    ]}
+                                    tickFormatter={(val) => `₹${Number(val).toLocaleString('en-IN')}`}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Area
@@ -176,7 +181,7 @@ export default function PriceHistoryChart({ product, history = [] }) {
                                 />
                             </AreaChart>
                         ) : (
-                            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <BarChart data={chartData} margin={{ top: 15, right: 20, left: 15, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                                 <XAxis
                                     dataKey="timestamp"
@@ -190,6 +195,9 @@ export default function PriceHistoryChart({ product, history = [] }) {
                                     fontSize={11}
                                     tickLine={false}
                                     axisLine={false}
+                                    width={50}
+                                    domain={[0, (dataMax) => Math.ceil(dataMax * 1.2)]}
+                                    tickFormatter={(val) => `${val}`}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Bar
