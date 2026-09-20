@@ -10,6 +10,7 @@ Built for the **INE Software Engineer Intern Assignment**.
 
 * **Live Frontend (Vercel):** *[Insert your Vercel URL here]*
 * **Live Backend (Render):** *[Insert your Render URL here]*
+* **GitHub Repository:** [https://github.com/pikapi2030/ScrapperAssingment](https://github.com/pikapi2030/ScrapperAssingment)
 * **Target Mock Storefront:** [https://demo.inelabteamdev.com](https://demo.inelabteamdev.com)
 * **Design Note:** [docs/DESIGN_NOTE.md](docs/DESIGN_NOTE.md)
 * **Screen Recording Walkthrough:** [docs/RECORDING_GUIDE.md](docs/RECORDING_GUIDE.md)
