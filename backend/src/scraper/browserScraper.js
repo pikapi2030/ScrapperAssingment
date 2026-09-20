@@ -135,16 +135,40 @@ const browserScraper = {
         console.log(`[Scraper] Starting scrape for product #${productId} (${isHeaded ? 'HEADED' : 'HEADLESS'})...`);
 
         try {
-            browser = await chromium.launch({
-                headless: !isHeaded,
-                slowMo: slowMo,
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-blink-features=AutomationControlled'
-                ]
-            });
+            try {
+                browser = await chromium.launch({
+                    headless: !isHeaded,
+                    slowMo: slowMo,
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-blink-features=AutomationControlled'
+                    ]
+                });
+            } catch (launchErr) {
+                if (launchErr.message && launchErr.message.includes("Executable doesn't exist")) {
+                    console.log('[Scraper] Chromium binary missing. Running on-demand Playwright install...');
+                    const { execSync } = require('child_process');
+                    try {
+                        execSync('npx playwright install chromium', { stdio: 'inherit' });
+                        browser = await chromium.launch({
+                            headless: !isHeaded,
+                            slowMo: slowMo,
+                            args: [
+                                '--no-sandbox',
+                                '--disable-setuid-sandbox',
+                                '--disable-dev-shm-usage',
+                                '--disable-blink-features=AutomationControlled'
+                            ]
+                        });
+                    } catch (e) {
+                        throw new Error(`Chromium binary not found and on-demand install failed: ${e.message}`);
+                    }
+                } else {
+                    throw launchErr;
+                }
+            }
 
             const context = await browser.newContext({
                 viewport: { width: 1280, height: 800 },

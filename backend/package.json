@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
+    "postinstall": "node scripts/install-browsers.js",
     "scrape:headed": "node src/cli/scrapeCli.js --headed",
     "scrape:headless": "node src/cli/scrapeCli.js",
     "test": "node test/scraper.test.js"
