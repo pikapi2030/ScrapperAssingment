@@ -8,8 +8,8 @@ Built for the **INE Software Engineer Intern Assignment**.
 
 ## 🚀 Live Deployment & Links
 
-* **Live Frontend (Vercel):** *[Insert your Vercel URL here]*
-* **Live Backend (Render):** *[Insert your Render URL here]*
+* **Live Frontend (Vercel):** [https://scrapper-assingment.vercel.app](https://scrapper-assingment.vercel.app)
+* **Live Backend (Render):** [https://scrapperassingment.onrender.com](https://scrapperassingment.onrender.com)
 * **GitHub Repository:** [https://github.com/pikapi2030/ScrapperAssingment](https://github.com/pikapi2030/ScrapperAssingment)
 * **Target Mock Storefront:** [https://demo.inelabteamdev.com](https://demo.inelabteamdev.com)
 * **Design Note:** [docs/DESIGN_NOTE.md](docs/DESIGN_NOTE.md)
