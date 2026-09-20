@@ -95,6 +95,23 @@ function parseStock(rawStockText) {
     return { stock: 0, inStock: false };
 }
 
+async function dismissCookieBanner(page) {
+    try {
+        const cookieBtn = page.locator('.cookie-banner button.btn-primary, button[aria-label="Accept cookies"], button:has-text("Accept")').first();
+        if (await cookieBtn.isVisible({ timeout: 1200 }).catch(() => false)) {
+            console.log('[Scraper] Cookie consent banner detected. Dismissing...');
+            await cookieBtn.click({ delay: 50 }).catch(() => {});
+            await page.waitForTimeout(400);
+        }
+    } catch (e) {}
+
+    // Failsafe: remove overlay element if it still intercepts pointer events
+    await page.evaluate(() => {
+        const overlay = document.querySelector('.cookie-overlay');
+        if (overlay) overlay.remove();
+    }).catch(() => {});
+}
+
 /**
  * Core Playwright browser scraper.
  * Handles all intentional hurdles:
@@ -139,6 +156,9 @@ const browserScraper = {
             // Navigate to product page
             console.log(`[Scraper] Navigating to ${targetUrl}...`);
             await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+
+            // Dismiss any cookie consent overlay
+            await dismissCookieBanner(page);
 
             // 1. Locate price container
             const priceBlockSelector = '.price-block, .product-buy, .price-section';
@@ -199,7 +219,13 @@ const browserScraper = {
                 }
 
                 console.log(`[Scraper] Clicking "Reveal price" (attempt ${clickAttempts})...`);
-                await revealBtn.click({ delay: 50 });
+                await dismissCookieBanner(page);
+                try {
+                    await revealBtn.click({ delay: 50, timeout: 4000 });
+                } catch (clickErr) {
+                    console.warn(`[Scraper] Pointer intercepted or click delayed: ${clickErr.message}. Clearing overlay and retrying...`);
+                    await dismissCookieBanner(page);
+                }
 
                 // Wait 1.2s to detect if click was dropped by mock store's Xn() chaos filter
                 await page.waitForTimeout(1200);
