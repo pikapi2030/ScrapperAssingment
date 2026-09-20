@@ -25,6 +25,21 @@ export default function Navbar({ unreadAlertsCount, onOpenAlerts, onOpenDomHealt
 
                 {/* Right controls */}
                 <div className="flex items-center space-x-3">
+                    {/* Backend Connection Status Badge */}
+                    <div
+                        className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+                            healthData
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                        }`}
+                        title={healthData ? "Backend API is online and responding" : "Backend waking up or connecting (Render cold start takes ~30s)"}
+                    >
+                        <span className={`w-2 h-2 rounded-full ${healthData ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400 animate-ping'}`} />
+                        <span className="hidden sm:inline">
+                            {healthData ? 'API Online' : 'Waking Up...'}
+                        </span>
+                    </div>
+
                     {/* Store Target Link */}
                     <a
                         href="https://demo.inelabteamdev.com"

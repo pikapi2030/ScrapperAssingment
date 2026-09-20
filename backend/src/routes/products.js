@@ -15,9 +15,16 @@ router.get('/search', async (req, res) => {
         const category = req.query.category || '';
         const results = await catalogFetcher.search(query, category);
 
-        // Cross-reference with tracked status
-        const tracked = await db.getTrackedProducts();
-        const trackedIds = new Set(tracked.map(p => p.id));
+        // Cross-reference with tracked status safely
+        let trackedIds = new Set();
+        try {
+            const tracked = await db.getTrackedProducts();
+            if (Array.isArray(tracked)) {
+                trackedIds = new Set(tracked.map(p => p.id));
+            }
+        } catch (dbErr) {
+            console.warn('[Route] Could not check tracked status for catalog results:', dbErr.message);
+        }
 
         const enriched = results.slice(0, 50).map(item => ({
             ...item,

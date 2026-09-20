@@ -1,14 +1,35 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+export const API_BASE = rawApiUrl.replace(/\/+$/, '');
 
 const api = axios.create({
     baseURL: API_BASE,
-    timeout: 30000,
+    timeout: 60000, // 60s to accommodate Render free-tier cold starts
     headers: {
         'Content-Type': 'application/json'
     }
 });
+
+// Detect when Vercel SPA rewrite returns HTML (index.html) instead of API JSON
+api.interceptors.response.use(
+    (response) => {
+        if (typeof response.data === 'string' && response.data.trim().toLowerCase().startsWith('<!doctype')) {
+            throw new Error(
+                'API returned HTML instead of JSON. Ensure VITE_API_URL is configured in your Vercel Project Settings pointing to your Render backend.'
+            );
+        }
+        return response;
+    },
+    (error) => {
+        if (error.response && typeof error.response.data === 'string' && error.response.data.trim().toLowerCase().startsWith('<!doctype')) {
+            error.message = 'API returned HTML instead of JSON. Ensure VITE_API_URL is set in Vercel to your Render backend.';
+        }
+        return Promise.reject(error);
+    }
+);
+
+export const isBackendConfigured = () => Boolean(API_BASE);
 
 export const searchCatalog = async (query = '', category = '') => {
     const res = await api.get('/api/products/search', { params: { q: query, category } });

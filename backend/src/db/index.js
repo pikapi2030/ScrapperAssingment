@@ -6,7 +6,8 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
+const isPlaceholderKey = !supabaseKey || supabaseKey.includes('your_supabase') || supabaseKey.includes('placeholder') || supabaseKey.length < 20;
+const isSupabaseConfigured = Boolean(supabaseUrl && !isPlaceholderKey);
 
 let supabase = null;
 if (isSupabaseConfigured) {
@@ -17,7 +18,7 @@ if (isSupabaseConfigured) {
         console.warn('[DB] Failed to initialize Supabase client:', err.message);
     }
 } else {
-    console.log('[DB] Supabase credentials not found. Using persistent local store (backend/data/db.json).');
+    console.log('[DB] Supabase credentials not set or using placeholder. Using persistent local store (backend/data/db.json).');
 }
 
 // Local persistent store fallback
