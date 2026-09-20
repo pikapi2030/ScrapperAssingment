@@ -1,0 +1,17 @@
+{
+  "name": "ine-product-price-tracker",
+  "version": "1.0.0",
+  "description": "Full-Stack Product Price Tracker with resilient web scraping for INE mock storefront",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "start": "npm --prefix backend start",
+    "build": "npm --prefix frontend run build",
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "scrape:headed": "npm --prefix backend run scrape:headed --",
+    "scrape:headless": "npm --prefix backend run scrape:headless --",
+    "test": "npm --prefix backend test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
