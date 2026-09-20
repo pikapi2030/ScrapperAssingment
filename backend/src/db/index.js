@@ -1,18 +1,24 @@
 const fs = require('fs');
 const path = require('path');
+
+// Polyfill WebSocket for Node.js <= 20 environments so @supabase/supabase-js initializes cleanly
+if (!globalThis.WebSocket) {
+    globalThis.WebSocket = class {};
+}
+
 const { createClient } = require('@supabase/supabase-js');
 
 // Check for Supabase configuration
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = (process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 
-// A real Supabase API key (anon or service_role) is always a JWT token starting with 'eyJ'
+// Support both new Supabase keys (sb_publishable_...) and legacy anon JWTs (eyJ...)
 const isValidSupabaseKey = Boolean(
     supabaseKey &&
-    supabaseKey.startsWith('eyJ') &&
+    (supabaseKey.startsWith('sb_') || supabaseKey.startsWith('eyJ')) &&
     !supabaseKey.includes('your_supabase') &&
     !supabaseKey.includes('placeholder') &&
-    supabaseKey.length > 50
+    supabaseKey.length > 25
 );
 
 const isSupabaseConfigured = Boolean(supabaseUrl && isValidSupabaseKey);
