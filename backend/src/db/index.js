@@ -4,10 +4,18 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Check for Supabase configuration
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = (process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 
-const isPlaceholderKey = !supabaseKey || supabaseKey.includes('your_supabase') || supabaseKey.includes('placeholder') || supabaseKey.length < 20;
-const isSupabaseConfigured = Boolean(supabaseUrl && !isPlaceholderKey);
+// A real Supabase API key (anon or service_role) is always a JWT token starting with 'eyJ'
+const isValidSupabaseKey = Boolean(
+    supabaseKey &&
+    supabaseKey.startsWith('eyJ') &&
+    !supabaseKey.includes('your_supabase') &&
+    !supabaseKey.includes('placeholder') &&
+    supabaseKey.length > 50
+);
+
+const isSupabaseConfigured = Boolean(supabaseUrl && isValidSupabaseKey);
 
 let supabase = null;
 if (isSupabaseConfigured) {
@@ -18,7 +26,7 @@ if (isSupabaseConfigured) {
         console.warn('[DB] Failed to initialize Supabase client:', err.message);
     }
 } else {
-    console.log('[DB] Supabase credentials not set or using placeholder. Using persistent local store (backend/data/db.json).');
+    console.log('[DB] Supabase credentials not set or not a valid JWT key. Using persistent local store (backend/data/db.json).');
 }
 
 // Local persistent store fallback
